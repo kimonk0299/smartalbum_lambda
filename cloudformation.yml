@@ -1,0 +1,128 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Metadata:
+  Generator: "former2"
+Description: ""
+Resources:
+  S3Bucket:
+    Type: "AWS::S3::Bucket"
+    DeletionPolicy: Retain
+    Properties:
+      BucketName: !Sub "photos-bucket-1"
+      NotificationConfiguration:
+        LambdaConfigurations:
+          - Event: "s3:ObjectCreated:*"
+            Function: !GetAtt LambdaFunction.Arn
+
+  S3Bucket2:
+    Type: "AWS::S3::Bucket"
+    DeletionPolicy: Retain
+    Properties:
+      BucketName: "photos-frontend-bucket"
+      WebsiteConfiguration:
+        IndexDocument: "index.html"
+
+  LambdaFunction:
+    Type: "AWS::Lambda::Function"
+    DeletionPolicy: Retain
+    Properties:
+      Description: ""
+      FunctionName: "index-photos"
+      Handler: "lambda_function.lambda_handler"
+      Architectures:
+        - "x86_64"
+      Code:
+        S3Bucket: "lambda-functions-bucket-1"
+        S3Key: !Sub "/snapshots/276240606154/image-index-52dd2ecb-a365-42bc-8c3a-9691e572cb86"
+        S3ObjectVersion: "z5mjD0Us9Y6NLUQFGgCYJ5jdLyKeyVsD"
+      MemorySize: 128
+      Role: !Sub "arn:aws:iam::276240606154:role/photos-role"
+      Runtime: "python3.7"
+      Timeout: 3
+      TracingConfig:
+        Mode: "PassThrough"
+      EphemeralStorage:
+        Size: 512
+
+  LambdaFunction2:
+    Type: "AWS::Lambda::Function"
+    DeletionPolicy: Retain
+    Properties:
+      Description: ""
+      FunctionName: "search-photos"
+      Handler: "lambda_function.lambda_handler"
+      Architectures:
+        - "x86_64"
+      Code:
+        S3Bucket: "lambda-functions-bucket-1"
+        S3Key: !Sub "/snapshots/276240606154/image_search-4657e773-4b8b-49fc-8414-d14a712620b1"
+        S3ObjectVersion: "gs0M_5sD9N5HbMlE81n5ImVsg_l2gyq_"
+      MemorySize: 128
+      Role: !Sub "arn:aws:iam::276240606154:role/photos-role"
+      Runtime: "python3.7"
+      Timeout: 60
+      TracingConfig:
+        Mode: "PassThrough"
+      EphemeralStorage:
+        Size: 512
+
+  ApiGatewayRestApi:
+    Type: "AWS::ApiGateway::RestApi"
+    DeletionPolicy: Retain
+    Properties:
+      Name: "api-for-photos"
+      Description: "AI Photo Search application, built during the Cloud and Big Data course at Columbia University."
+      ApiKeySourceType: "HEADER"
+      EndpointConfiguration:
+        Types:
+          - "REGIONAL"
+
+  ApiGatewayStage:
+    Type: "AWS::ApiGateway::Stage"
+    DeletionPolicy: Retain
+    Properties:
+      StageName: "dev"
+      DeploymentId: "5vl19r"
+      RestApiId: "q7gnsp2ljb"
+      CacheClusterEnabled: false
+      CacheClusterSize: "0.5"
+      MethodSettings:
+        - CacheDataEncrypted: false
+          CacheTtlInSeconds: 300
+          CachingEnabled: false
+          DataTraceEnabled: false
+          HttpMethod: "*"
+          MetricsEnabled: false
+          ResourcePath: "/*"
+          ThrottlingBurstLimit: 5000
+          ThrottlingRateLimit: 10000
+      TracingEnabled: false
+
+  OpenSearchServiceDomain:
+    Type: "AWS::OpenSearchService::Domain"
+    DeletionPolicy: Retain
+    Properties:
+      DomainName: "photos"
+      EngineVersion: "7.10"
+      ClusterConfig:
+        DedicatedMasterEnabled: false
+        InstanceCount: 1
+        InstanceType: "t3.small.elasticsearch"
+        ZoneAwarenessEnabled: false
+        WarmEnabled: false
+      EBSOptions:
+        EBSEnabled: true
+        VolumeType: "gp3"
+        VolumeSize: 10
+        Iops: 3000
+        Throughput: 125
+      DomainEndpointOptions:
+        EnforceHTTPS: true
+        TLSSecurityPolicy: "Policy-Min-TLS-1-0-2019-07"
+        CustomEndpointEnabled: false
+
+  ApiGatewayDeployment:
+    Type: "AWS::ApiGateway::Deployment"
+    DeletionPolicy: Retain
+    Properties:
+      RestApiId: "q7gnsp2ljb"
+      Description: "Created by AWS Lambda"
