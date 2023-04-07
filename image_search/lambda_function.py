@@ -144,6 +144,7 @@ def lambda_handler(event, context):
         s3client = boto3.client('s3')
         jb_name = job_name + '.json'
         print("Job name: ", jb_name)
+        print("Hello")
         
         # Get Transcription (JSON) from s3 bucket
         s3 = boto3.resource('s3')
