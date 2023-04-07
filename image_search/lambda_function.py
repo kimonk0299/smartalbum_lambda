@@ -95,6 +95,7 @@ def lambda_handler(event, context):
         return build_response(400, "Bad request, there was nothing in the query params")
     query = query_params["q"]
     print("QueryStringParameters: ----" , query)
+    print("Test")
     
     # AWS Transcribe: Get transcribed text from voice recordings
     if (query == "transcriptionStart"):
